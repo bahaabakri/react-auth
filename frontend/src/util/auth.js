@@ -1,7 +1,14 @@
 import { redirect } from "react-router-dom"
 
 export function getAuthenticationToken() {
-    return localStorage.getItem('token') ?? null
+    const token = localStorage.getItem('token')
+    if (!token) {
+        return null
+    }
+    if(getTimeToExpired() < 0) {
+        return 'Expired'
+    }
+    return token
 }
 
 export function getAuthenticationExpiredDate() {
@@ -12,16 +19,17 @@ export function getTimeToExpired() {
     if (!getAuthenticationExpiredDate()) {
         return null
     }
-    return new Date().getTime() - getAuthenticationExpiredDate().getTime()
+    return new Date(getAuthenticationExpiredDate()).getTime() - new Date().getTime()
 }
 export function setAuthenticationToken(token) {
     localStorage.setItem('token', token)
     const expireDateInDate = new Date()
-    expireDateInDate.setHours(expireDateInDate.getHours() + 1)
+    expireDateInDate.setMinutes(expireDateInDate.getMinutes() + 2)
     localStorage.setItem('expireDateInTS', expireDateInDate.toISOString())
 }
 export function deleteAuthenticationToken() {
     localStorage.removeItem('token')
+    localStorage.removeItem('expireDateInTS')
 }
 export function authLoader() {
     if (getAuthenticationToken()) {
